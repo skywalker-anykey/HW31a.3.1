@@ -4,6 +4,8 @@ import (
 	"GoNews/pkg/api"
 	"GoNews/pkg/storage"
 	"GoNews/pkg/storage/memdb"
+	"GoNews/pkg/storage/postgres"
+	"log"
 	"net/http"
 )
 
@@ -20,23 +22,23 @@ func main() {
 	// Создаём объекты баз данных.
 	//
 	// БД в памяти.
-	db := memdb.New()
-	/*
-		// Реляционная БД PostgreSQL.
-		db2, err := postgres.New("postgres://postgres:postgres@server.domain/posts")
-		if err != nil {
-			log.Fatal(err)
-		}
-		// Документная БД MongoDB.
-		db3, err := mongo.New("mongodb://server.domain:27017/")
-		if err != nil {
-			log.Fatal(err)
-		}
-		_, _ = db2, db3
-	*/
+	db1 := memdb.New()
+
+	// Реляционная БД Postgres SQL.
+	db2, err := postgres.New("postgres://sandbox:sandbox@localhost:5432/news")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Документная БД MongoDB.
+	//db3, err := mongo.New("mongodb://server.domain:27017/")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//_, _, _ = db1, db2, db3
+	_, _ = db1, db2
 
 	// Инициализируем хранилище сервера конкретной БД.
-	srv.db = db
+	srv.db = db2
 
 	// Создаём объект API и регистрируем обработчики.
 	srv.api = api.New(srv.db)
@@ -45,5 +47,5 @@ func main() {
 	// Предаём серверу маршрутизатор запросов,
 	// поэтому сервер будет все запросы отправлять на маршрутизатор.
 	// Маршрутизатор будет выбирать нужный обработчик.
-	http.ListenAndServe(":8080", srv.api.Router())
+	_ = http.ListenAndServe(":8080", srv.api.Router())
 }

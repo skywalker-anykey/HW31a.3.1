@@ -2,10 +2,10 @@ package memdb
 
 import "GoNews/pkg/storage"
 
-// Хранилище данных.
+// Store - хранилище данных.
 type Store struct{}
 
-// Конструктор объекта хранилища.
+// New - конструктор объекта хранилища.
 func New() *Store {
 	return new(Store)
 }
