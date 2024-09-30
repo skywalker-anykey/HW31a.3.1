@@ -78,10 +78,16 @@ func (s *Store) AddPost(p storage.Post) error {
 }
 
 func (s *Store) UpdatePost(p storage.Post) error {
+	_ = p
 	return nil
 }
 
 func (s *Store) DeletePost(p storage.Post) error {
+	filter := bson.M{"id": p.ID}
+	_, err := s.db.Collection(db_posts_collection).DeleteOne(context.Background(), filter)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 }
 

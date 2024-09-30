@@ -11,7 +11,7 @@ const (
 	dbName  = "news"
 )
 
-var S *Store
+//var S *Store
 
 func TestNew(t *testing.T) {
 	type args struct {
@@ -89,6 +89,41 @@ func TestStore_AddPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := s.AddPost(tt.args.p); (err != nil) != tt.wantErr {
 				t.Errorf("AddPost() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestStore_DeletePost(t *testing.T) {
+	s, err := New(connect, dbName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastPostID := s.nextPostID - 1
+
+	type args struct {
+		p storage.Post
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Delete Last Post",
+			args: args{
+				p: storage.Post{
+					ID: lastPostID,
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := s.DeletePost(tt.args.p); (err != nil) != tt.wantErr {
+				t.Errorf("DeletePost() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
