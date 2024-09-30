@@ -47,7 +47,20 @@ func New(connect, dbName string) (*Store, error) {
 }
 
 func (s *Store) Posts() ([]storage.Post, error) {
-	return nil, nil
+	filter := bson.M{}
+	cursor, err := s.db.Collection(db_posts_collection).Find(context.Background(), filter)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//var posts []bson.M
+	var posts []storage.Post
+	if err = cursor.All(context.Background(), &posts); err != nil {
+		log.Println(err)
+	}
+	log.Println(posts)
+
+	return posts, nil
 }
 
 func (s *Store) AddPost(p storage.Post) error {

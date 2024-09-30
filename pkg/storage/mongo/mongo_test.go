@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"GoNews/pkg/storage"
+	"fmt"
 	"log"
 	"testing"
 )
@@ -125,6 +126,33 @@ func TestStore_DeletePost(t *testing.T) {
 			if err := s.DeletePost(tt.args.p); (err != nil) != tt.wantErr {
 				t.Errorf("DeletePost() error = %v, wantErr %v", err, tt.wantErr)
 			}
+		})
+	}
+}
+
+func TestStore_Posts(t *testing.T) {
+	s, err := New(connect, dbName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "Get All Posts",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := s.Posts()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Posts() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			fmt.Println(got)
 		})
 	}
 }
