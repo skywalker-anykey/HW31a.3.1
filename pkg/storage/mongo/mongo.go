@@ -53,12 +53,10 @@ func (s *Store) Posts() ([]storage.Post, error) {
 		log.Println(err)
 	}
 
-	//var posts []bson.M
 	var posts []storage.Post
 	if err = cursor.All(context.Background(), &posts); err != nil {
 		log.Println(err)
 	}
-	log.Println(posts)
 
 	return posts, nil
 }
@@ -91,7 +89,17 @@ func (s *Store) AddPost(p storage.Post) error {
 }
 
 func (s *Store) UpdatePost(p storage.Post) error {
-	_ = p
+	_, err := s.db.Collection(db_posts_collection).UpdateOne(context.Background(),
+		bson.M{
+			"id": p.ID,
+		}, bson.D{
+			{"$set", p},
+		})
+
+	if err != nil {
+		log.Print(err)
+	}
+
 	return nil
 }
 
