@@ -156,3 +156,39 @@ func TestStore_Posts(t *testing.T) {
 		})
 	}
 }
+
+func TestStore_UpdatePost(t *testing.T) {
+	s, err := New(connect, dbName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastPostID := s.nextPostID - 1
+
+	type args struct {
+		p storage.Post
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Update Last Post",
+			args: args{
+				p: storage.Post{
+					ID:      lastPostID,
+					Title:   "[update] Title",
+					Content: "[update] Content",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := s.UpdatePost(tt.args.p); (err != nil) != tt.wantErr {
+				t.Errorf("UpdatePost() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
