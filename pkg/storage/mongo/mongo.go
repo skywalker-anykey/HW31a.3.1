@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	db_posts_collection   = "posts"
-	db_authors_collection = "authors"
-	db_default_author     = "Anonymous"
+	dbPostsCollection   = "posts"
+	dbAuthorsCollection = "authors"
+	dbDefaultAuthor     = "Anonymous"
 )
 
 // Store - хранилище данных.
@@ -48,14 +48,14 @@ func New(connect, dbName string) (*Store, error) {
 
 func (s *Store) Posts() ([]storage.Post, error) {
 	filter := bson.M{}
-	cursor, err := s.db.Collection(db_posts_collection).Find(context.Background(), filter)
+	cursor, err := s.db.Collection(dbPostsCollection).Find(context.Background(), filter)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
 	var posts []storage.Post
 	if err = cursor.All(context.Background(), &posts); err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
 	return posts, nil
@@ -69,7 +69,7 @@ func (s *Store) AddPost(p storage.Post) error {
 
 	// Если не выбран автор, то указываем дефолтного
 	if p.AuthorName == "" {
-		p.AuthorName = db_default_author
+		p.AuthorName = dbDefaultAuthor
 	}
 
 	// Получить ID автора
@@ -81,7 +81,7 @@ func (s *Store) AddPost(p storage.Post) error {
 	p.ID = s.nextPostID
 	s.nextPostID++
 
-	_, err = s.db.Collection(db_posts_collection).InsertOne(context.Background(), p)
+	_, err = s.db.Collection(dbPostsCollection).InsertOne(context.Background(), p)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (s *Store) AddPost(p storage.Post) error {
 }
 
 func (s *Store) UpdatePost(p storage.Post) error {
-	_, err := s.db.Collection(db_posts_collection).UpdateOne(context.Background(),
+	_, err := s.db.Collection(dbPostsCollection).UpdateOne(context.Background(),
 		bson.M{
 			"id": p.ID,
 		}, bson.D{
@@ -97,7 +97,7 @@ func (s *Store) UpdatePost(p storage.Post) error {
 		})
 
 	if err != nil {
-		log.Print(err)
+		return err
 	}
 
 	return nil
@@ -105,9 +105,9 @@ func (s *Store) UpdatePost(p storage.Post) error {
 
 func (s *Store) DeletePost(p storage.Post) error {
 	filter := bson.M{"id": p.ID}
-	_, err := s.db.Collection(db_posts_collection).DeleteOne(context.Background(), filter)
+	_, err := s.db.Collection(dbPostsCollection).DeleteOne(context.Background(), filter)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	return nil
 }
@@ -120,7 +120,7 @@ func (s *Store) GetAuthorId(authorName string) (int, error) {
 		ID       int                `bson:"id"`
 	}{}
 
-	err := s.db.Collection(db_authors_collection).FindOne(context.Background(), bson.M{"name": authorName}).Decode(&authors)
+	err := s.db.Collection(dbAuthorsCollection).FindOne(context.Background(), bson.M{"name": authorName}).Decode(&authors)
 
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -143,7 +143,7 @@ func (s *Store) CreateAuthorId(authorName string) (int, error) {
 		"name": authorName,
 		"id":   s.nextAuthorID,
 	}
-	_, err := s.db.Collection(db_authors_collection).InsertOne(context.Background(), dbAuthorName)
+	_, err := s.db.Collection(dbAuthorsCollection).InsertOne(context.Background(), dbAuthorName)
 	if err != nil {
 		return 0, err
 	}
@@ -166,13 +166,13 @@ func (s *Store) SetIds() error {
 	sortStage := bson.D{{"$sort", bson.D{{"id", -1}}}}
 	limitStage := bson.D{{"$limit", 1}}
 
-	cursor, err := s.db.Collection(db_authors_collection).Aggregate(context.TODO(), mongo.Pipeline{unsetStage, sortStage, limitStage})
+	cursor, err := s.db.Collection(dbAuthorsCollection).Aggregate(context.TODO(), mongo.Pipeline{unsetStage, sortStage, limitStage})
 	if err != nil {
 		return err
 	}
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		panic(err)
+		return err
 	}
 
 	var maxAuthID int
@@ -188,7 +188,7 @@ func (s *Store) SetIds() error {
 	sortStage = bson.D{{"$sort", bson.D{{"id", -1}}}}
 	limitStage = bson.D{{"$limit", 1}}
 
-	cursor, err = s.db.Collection(db_posts_collection).Aggregate(context.TODO(), mongo.Pipeline{unsetStage, sortStage, limitStage})
+	cursor, err = s.db.Collection(dbPostsCollection).Aggregate(context.TODO(), mongo.Pipeline{unsetStage, sortStage, limitStage})
 	if err != nil {
 		log.Println("1 ", err)
 		return err
