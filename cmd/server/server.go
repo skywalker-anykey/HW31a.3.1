@@ -4,6 +4,7 @@ import (
 	"GoNews/pkg/api"
 	"GoNews/pkg/storage"
 	"GoNews/pkg/storage/memdb"
+	"GoNews/pkg/storage/mongo"
 	"GoNews/pkg/storage/postgres"
 	"log"
 	"net/http"
@@ -29,19 +30,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	/*
-		// Документная БД MongoDB.
-		db3, err := mongo.New("mongodb://192.168.1.20:27017/", "news")
-		if err != nil {
-			log.Fatal(err)
-		}
-		_, _, _ = db1, db2, db3
 
-	*/
-	_, _ = db1, db2
+	// Документная БД MongoDB.
+	db3, err := mongo.New("mongodb://192.168.1.20:27017/", "news")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, _, _ = db1, db2, db3
 
 	// Инициализируем хранилище сервера конкретной БД.
-	srv.db = db2
+	srv.db = db3
 
 	// Создаём объект API и регистрируем обработчики.
 	srv.api = api.New(srv.db)
