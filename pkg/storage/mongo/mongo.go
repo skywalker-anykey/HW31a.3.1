@@ -32,6 +32,13 @@ func New(connect, dbName string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// проверка связи с БД
+	err = db.Ping(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+
 	r := &Store{
 		db:           db.Database(dbName),
 		nextPostID:   0,
